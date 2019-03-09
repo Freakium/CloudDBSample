@@ -1,0 +1,27 @@
+{
+  "name": "sqlcloud",
+  "version": "1.0.0",
+  "description": "SQLite Cloud Sample",
+  "main": "index.js",
+  "scripts": {
+    "test": "Hello World!"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Freakium/CloudDBSample.git"
+  },
+  "keywords": [
+    "sqlite"
+  ],
+  "author": "Ross Chan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Freakium/CloudDBSample/issues"
+  },
+  "homepage": "https://github.com/Freakium/CloudDBSample#readme",
+  "dependencies": {
+    "ejs": "^2.6.1",
+    "express": "^4.16.4",
+    "sqlite3": "^4.0.6"
+  }
+}

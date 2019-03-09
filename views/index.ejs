@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cloud DB Sample</title>
+</head>
+<body>
+    <h1>Cloud DB Sample</h1>
+    <h4>Current contents of DB</h4>
+    <table style="border-collapse: collapse;"><tr>
+        <% if(dbContents !== null) {
+            var keys = Object.keys(dbContents[0]);
+            for(var i=0; i < keys.length; i++) { %>
+                <th style="background-color: #ddd;border:1px solid;"><%= keys[i]; %></th>
+            <% } %></tr>
+            <% for(var i=0; i < dbContents.length; i++) { %>
+                <tr>
+                <% for(var j=0; j < keys.length; j++) { %>
+                    <td style="border:1px solid;"><%= dbContents[i][keys[j]]; %></td>
+                <% } %></tr>
+            <% }
+        } %>
+    </table>
+</body>
+</html>
