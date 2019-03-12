@@ -1,0 +1,24 @@
+.input-group-text {
+    background-color:blue;
+    color:orange;
+    font-weight: bold;
+}
+
+#dbContentPane {
+    display: none;
+}
+
+.dbQuery {
+    border-collapse: collapse;
+    display:block;
+    overflow:auto;
+}
+
+.dbQuery-header {
+    background-color: #ddd;
+    border:1px solid;
+}
+
+.dbQuery-data {
+    border:1px solid;
+}

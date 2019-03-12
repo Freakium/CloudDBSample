@@ -3,24 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/CSS/styles.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="functions.js"></script>
     <title>Cloud DB Sample</title>
 </head>
 <body>
-    <h1>Cloud DB Sample</h1>
-    <h4>Current contents of DB</h4>
-    <table style="border-collapse: collapse;"><tr>
-        <% if(dbContents !== null) {
-            var keys = Object.keys(dbContents[0]);
-            for(var i=0; i < keys.length; i++) { %>
-                <th style="background-color: #ddd;border:1px solid;"><%= keys[i]; %></th>
-            <% } %></tr>
-            <% for(var i=0; i < dbContents.length; i++) { %>
-                <tr>
-                <% for(var j=0; j < keys.length; j++) { %>
-                    <td style="border:1px solid;"><%= dbContents[i][keys[j]]; %></td>
-                <% } %></tr>
-            <% }
-        } %>
-    </table>
+    <div class="container">
+        <h1>Cloud DB Sample</h1><hr>
+        <h4>Upload an SQLite database file for integration</h4>
+        <div class="input-group mb-4">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Upload</span>
+            </div>
+            <div class="custom-file">
+                <input type="file" class="custom-file-input" id="inputGroupFile01" onchange="fileUpload.dbUploadHandler(this.files);">
+                <label class="custom-file-label" id="uploadFilename" for="inputGroupFile01">Choose file</label>
+            </div>
+        </div>
+        <div id="messages"></div>
+        <div id="dbContentPane">
+            <h4>Current contents of DB</h4>
+            <table class="dbQuery"><tr>
+                <% if(dbContents !== null) {
+                    var keys = Object.keys(dbContents[0]);
+                    for(var i=0; i < keys.length; i++) { %>
+                        <th class="dbQuery-header"><%= keys[i]; %></th>
+                    <% } %></tr>
+                    <% for(var i=0; i < dbContents.length; i++) { %>
+                        <tr>
+                        <% for(var j=0; j < keys.length; j++) { %>
+                            <td class="dbQuery-data"><%= dbContents[i][keys[j]]; %></td>
+                        <% } %></tr>
+                    <% }
+                } %>
+            </table>
+        </div>
+    </div>
 </body>
 </html>
