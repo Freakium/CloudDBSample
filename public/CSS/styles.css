@@ -4,10 +4,6 @@
     font-weight: bold;
 }
 
-#dbContentPane {
-    display: none;
-}
-
 .dbQuery {
     border-collapse: collapse;
     display:block;

@@ -28,23 +28,7 @@
             </div>
         </div>
         <div id="messages"></div>
-        <div id="dbContentPane">
-            <h4>Current contents of DB</h4>
-            <table class="dbQuery"><tr>
-                <% if(dbContents !== null) {
-                    var keys = Object.keys(dbContents[0]);
-                    for(var i=0; i < keys.length; i++) { %>
-                        <th class="dbQuery-header"><%= keys[i]; %></th>
-                    <% } %></tr>
-                    <% for(var i=0; i < dbContents.length; i++) { %>
-                        <tr>
-                        <% for(var j=0; j < keys.length; j++) { %>
-                            <td class="dbQuery-data"><%= dbContents[i][keys[j]]; %></td>
-                        <% } %></tr>
-                    <% }
-                } %>
-            </table>
-        </div>
+        <div id="dbContentPane"></div>
     </div>
 </body>
 </html>

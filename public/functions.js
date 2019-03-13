@@ -1,9 +1,35 @@
 var fileUpload = function() {
-    function displayError(filename) {
+    // displays error message to page
+    function displayMessage(message, err) {
+        var mode;
+        if(err)
+            mode = 'alert-danger';
+        else
+            mode = 'alert-success';
+
         document.getElementById('messages').innerHTML =
-            '<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
-            '<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>' +
-            filename + ' is not a valid SQLite database file.';
+            '<div class="alert ' + mode + ' alert-dismissible fade show" role="alert">' +
+            '<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>' + message;
+    }
+    function displayQuery(data) {
+        var queryContent = '<h4>SQL Query Preview</h4><table class="dbQuery"><tr>';
+        
+        if(data !== null) {
+            var keys = Object.keys(data[0]);
+            for(var i=0; i < keys.length; i++) {
+                queryContent += '<th class="dbQuery-header">' + keys[i] + '</th>';
+            }
+            queryContent += '</tr>';
+            for(var i=0; i < data.length; i++) {
+                queryContent += '<tr>';
+                for(var j=0; j < keys.length; j++) {
+                    queryContent += '<td class="dbQuery-data">' + data[i][keys[j]] + '</td>';
+                } 
+                queryContent += '</tr>';
+            }
+            queryContent += '</table>';
+        }
+        document.getElementById('dbContentPane').innerHTML = queryContent;
     }
     return {
         dbUploadHandler: function(file) {
@@ -17,47 +43,25 @@ var fileUpload = function() {
                 data.append('file', file[0]);
 
                 $.ajax({
-                    url: "/post_db/",
+                    url: "/",
                     type: "POST",
                     data: data,
                     enctype: 'multipart/form-data',
                     processData: false,
                     contentType: false,
                     success: function(data) {
-                        document.getElementById('messages').innerHTML =
-                            '<div class="alert alert-success alert-dismissible fade show" role="alert">' +
-                            '<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>' +
-                            file[0].name + ' successfully uploaded.';
+                        displayMessage(file[0].name + ' successfully uploaded.', false);
+                        displayQuery(data);
                     },
                     error: function(e) {
-                        document.getElementById('messages').innerHTML =
-                            '<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
-                            '<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>' +
-                            'An error occurred: ' + e.responseText;
+                        displayMessage('An error occurred: ' + e.responseText, true);
                         console.log(e);
                     }
                 });
-                // validation check for duplicate file
-                /*if(business.getCurrentMenu().name == file[0].name) {
-                    this.uploadErrorMessage("There is already a copy of " + file[0].name + " in the database.", location);
-                    return false;
-                }
-                if(business.getAddMenu()) {
-                    if(business.getAddMenu().name == file[0].name) {
-                        this.uploadErrorMessage("There is already a copy of " + file[0].name + " in the upload queue.", location);
-                        return false;
-                    }
-                    // remove current file in upload queue
-                    else
-                        document.getElementById(business.getAddMenu().name + 'Div').remove();
-                }
-                business.setAddMenu(file[0]);
-                this.displayMenu(file[0].name, false);
-                this.exitPrompt();*/
-                $('#dbContentPane').show();
+                //$('#dbContentPane').show();
             }
             else {
-                displayError(file[0].name);
+                displayMessage(file[0].name, true);
             }
         }
     };
