@@ -103,7 +103,7 @@ app.post('/queries', (req, res) => {
     console.log(req.body.query);
     // test if query begins with SELECT statement
     var queryTest = req.body.query.split(' ');
-    if(queryTest[0] != 'SELECT') {
+    if(queryTest[0].toUpperCase() != 'SELECT'.toUpperCase()) {
         res.status(500).send('Please query database with a SELECT statement.');
     }
     else {

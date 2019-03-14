@@ -17,7 +17,7 @@
         <div class="input-group input-group-lg mb-4">
             <input type="text" class="form-control" id="sqlQuery">
             <div class="input-group-append">
-                <button class="btn btn-primary" onclick="dbQuery.submitQuery('sqlQuery');">Preview DB</button>
+                <button class="btn btn-primary" id="typedQuery" onclick="dbQuery.submitQuery('sqlQuery');">Preview DB</button>
             </div>
         </div>
         <button class="btn btn-primary mb-4" onclick="dbQuery.submitQuery('CalibrationResult');">View CalibrationResult Table</button>
@@ -25,5 +25,14 @@
         <div id="messages"></div>
         <div id="dbContentPane"></div>
     </div>
+
+    <script>
+        // Enter key Listener
+        document.getElementById('sqlQuery').addEventListener("keyup", function(event) {
+            if (event.keyCode === 13) {
+                document.getElementById("typedQuery").click();
+            }
+        });
+    </script>
 </body>
 </html>
