@@ -5,6 +5,7 @@ const multer = require('multer');
 const upload = multer();
 const fs = require('fs');
 const app = express();
+const DB_FILEPATH = './databases/Primary.db';
 
 app.use(express.static('public'));
 app.use(bodyParser.json());
@@ -45,7 +46,7 @@ app.post('/', upload.any(), (req, res) => {
         }
         
         // connect to DBs
-        let dbCon1 = new sqlite3.Database('./databases/Primary.db', sqlite3.OPEN_READWRITE, (err) => {
+        let dbCon1 = new sqlite3.Database(DB_FILEPATH, sqlite3.OPEN_READWRITE, (err) => {
             if (err) {
                 res.status(500).send(err.message);
                 console.error(err);
@@ -133,7 +134,7 @@ app.post('/queries', (req, res) => {
     else {
         var output = [];
         var goodQuery = true;
-        let db = new sqlite3.Database('./databases/primary.db', sqlite3.OPEN_READWRITE, (err) => {
+        let db = new sqlite3.Database(DB_FILEPATH, sqlite3.OPEN_READWRITE, (err) => {
             if (err) {
                 res.status(500).send(err.message);
                 console.error(err);
