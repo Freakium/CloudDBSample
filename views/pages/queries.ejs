@@ -23,6 +23,10 @@
         <button class="btn btn-primary mb-4" onclick="dbQuery.submitQuery('CalibrationResult');">View CalibrationResult Table</button>
         <button class="btn btn-primary mb-4" onclick="dbQuery.submitQuery('Tool');">View Tool Table</button>
         <div id="messages"></div>
+        <div class="text-center" id="waiting">
+            Fetching...
+            <div class="loader"></div>
+        </div>
         <div id="dbContentPane"></div>
     </div>
 

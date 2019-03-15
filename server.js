@@ -17,123 +17,153 @@ app.get('/queries', function(req, res) {
     res.render('pages/queries');
 });
 
-// Integration post route
-app.post('/', upload.any(), (req, res) => {
-    fs.writeFile('./databases/temp/' + req.files[0].originalname, req.files[0].buffer, (err) => {
+// closes the specified database connection
+var closeDatabaseConnection = (dbCon) => {
+    dbCon.close((err) => {
         if (err) {
-            res.status(500).send('An error occurred: ' + err);
-            console.error('Error: ', err);
+            console.error(err);
         }
-        else {
-            let db = new sqlite3.Database('./databases/primary.db', sqlite3.OPEN_READWRITE, (err) => {
-                if (err) {
-                    res.status(500).send(err);
-                    console.error(err);
-                }
-                console.log('Connected to the database.');
-            });
-            let secondary = new sqlite3.Database('./databases/temp/' + req.files[0].originalname, sqlite3.OPEN_READWRITE, (err) => {
-                if (err) {
-                    res.status(500).send(err);
-                    console.error(err);
-                }
-                console.log('Connected to the secondary database.');
-            });
-            
-            // Get all tables from uploaded DB and integrate
-            secondary.each(`SELECT name FROM sqlite_master WHERE type='table'`, (error, tableRow) => {
-                if (error) {
-                    res.status(500).send(error);
-                    console.error(error);
-                }
-                Object.keys(tableRow).forEach((table) => {
-                    secondary.each('SELECT * FROM ' + tableRow[table], (err, row) => {
-                        if (err) {
-                            res.status(500).send(err);
-                            console.error(err);
-                        }
-                        // Collects column names
-                        const keys = Object.keys(row);
-                        const columns = keys.toString();
-                        let values = '';
-                
-                        // Collects values
-                        Object.keys(row).forEach((r) => {
-                            values += ",'" + row[r] + "'";
-                        });
-                        values = values.substr(1);
+    });
+}
+
+// deletes the specified file
+var deleteFile = (filename) => {
+    fs.unlink(filename, (err) => {
+        if (err) {
+            console.error(err);
+            deleteFile(filename);
+        }
+    });
+}
+
+// Integration page post route
+app.post('/', upload.any(), (req, res) => {
+    var filepath = './databases/temp/' + req.files[0].originalname;
+    fs.writeFile(filepath, req.files[0].buffer, (err) => {
+        if (err) {
+            res.status(500).send(err.message);
+        }
         
-                        db.run('INSERT OR IGNORE INTO '+ tableRow[table] +' ('+columns+') VALUES ('+values+')');
+        // connect to DBs
+        let dbCon1 = new sqlite3.Database('./databases/Primary.db', sqlite3.OPEN_READWRITE, (err) => {
+            if (err) {
+                res.status(500).send(err.message);
+                console.error(err);
+            }
+        });
+        let dbCon2 = new sqlite3.Database(filepath, sqlite3.OPEN_READWRITE, (err) => {
+            if (err) {
+                res.status(500).send(err.message);
+                console.error(err);
+            }
+        });
+    
+        // Get all tables from uploaded DB and integrate
+        dbCon2.all(`SELECT name FROM sqlite_master WHERE type='table'`, (error, tableRow) => {
+            if (error) {
+                res.status(500).send(error.message);
+                console.error(error);
+
+                // safely close DB connections and delete temporary file
+                closeDatabaseConnection(dbCon1);
+                closeDatabaseConnection(dbCon2);
+                deleteFile(filepath);
+            }
+            else {
+                // Collect table names
+                tableRow.forEach((table) => {
+                    dbCon2.all('SELECT * FROM ' + table.name, (err, rows) => {
+                        if (err) {
+                            res.status(500).send(err.message);
+                            console.error(err);
+                            return;
+                        }
+
+                        if(rows != null) {
+                            rows.forEach( (row) => {
+                                // Collects column names
+                                const keys = Object.keys(row);
+                                const columns = keys.toString();
+                                let values = '';
+                        
+                                // Collects values
+                                Object.keys(row).forEach((r) => {
+                                    values += ",'" + row[r] + "'";
+                                });
+                                values = values.substr(1);
+
+                                dbCon1.run('INSERT OR IGNORE INTO '+ table.name +' ('+columns+') VALUES ('+values+')');
+                            });
+                        }
                     });
                 });
-            });
-            
-            // close the database connections and delete secondary db file
-            secondary.close((err) => {
-                if (err) {
-                    res.status(500).send(err);
-                    console.error(err);
-                }
-                console.log('Closed the secondary database connection.');
-
-                // delete temporary 2nd db
-                fs.unlink('./databases/temp/' + req.files[0].originalname, function (err) {
+                
+                // close the database connections and delete secondary db file
+                dbCon2.close((err) => {
                     if (err) {
-                        res.status(500).send(err);
+                        console.error("Con2 close", err);
+                        res.status(500).send(err.message);
                         console.error(err);
                     }
-                    console.log(req.files[0].originalname + ' deleted!');
+                    dbCon1.close((err) => {
+                        if (err) {
+                            console.error("CON 1 Close", err);
+                            res.status(500).send(err.message);
+                            console.error(err);
+                        }
+                        else {
+                            res.status(200).send('ok');
+                            deleteFile(filepath);
+                        }
+                    });
                 });
-                db.close((err) => {
-                    if (err) {
-                        res.status(500).send(err);
-                        console.error(err);
-                    }
-                    else {
-                        res.status(200).send('ok');
-                        console.log('Closed the primary database connection.');
-                    }
-                });
-            });
-        }
+            }
+        });
     });
 });
 
+// Queries page post route
 app.post('/queries', (req, res) => {
-    console.log(req.body.query);
     // test if query begins with SELECT statement
-    var queryTest = req.body.query.split(' ');
+    var query = req.body.query.trim();
+    var queryTest = query.split(' ');
     if(queryTest[0].toUpperCase() != 'SELECT'.toUpperCase()) {
         res.status(500).send('Please query database with a SELECT statement.');
     }
     else {
         var output = [];
+        var goodQuery = true;
         let db = new sqlite3.Database('./databases/primary.db', sqlite3.OPEN_READWRITE, (err) => {
             if (err) {
-                res.status(500).send(err);
+                res.status(500).send(err.message);
                 console.error(err);
             }
-            console.log('Connected to the database.');
         });
-        db.each(req.body.query, (err, row) => {
+        // Grab contents of all rows from query and send to client
+        db.each(query, (err, row) => {
             if (err) {
-                res.status(500).send(err);
-                console.error(err);
-            }
-            output.push(row);
-        }).close((err) => {
-            if (err) {
-                res.status(500).send(err);
-                console.error(err);
+                goodQuery = false;
+                res.status(500).send(err.message);
+                console.error("BAD QUERY" + err);
+                closeDatabaseConnection(db);
             }
             else {
+                output.push(row);
+            }
+        });
+
+        db.close((err) => {
+            if (err) {
+                res.status(500).send(err.message);
+                console.error(err);
+            }
+            if(goodQuery) {
                 res.status(200).send(output);
-                console.log('Closed the primary database connection.');
             }
         });
     }
 });
 
 app.listen(8080, function() {
-    console.log('Example app listening on port 8080!');
+    console.log('Now listening on port 8080.');
 });

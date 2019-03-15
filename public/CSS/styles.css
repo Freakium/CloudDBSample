@@ -11,21 +11,7 @@
     font-weight: bold;
 }
 
-.dbQuery {
-    border-collapse: collapse;
-    display:block;
-    overflow:auto;
-}
-
-.dbQuery-header {
-    background-color: #ddd;
-    border:1px solid;
-}
-
-.dbQuery-data {
-    border:1px solid;
-}
-
+/****** Loading spinner ******/
 #waiting {
     display: none;
 }

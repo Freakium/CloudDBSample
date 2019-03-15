@@ -1,4 +1,4 @@
-// displays error message to page
+// displays message to page in form of closable alert
 var displayMessage = function(message, err) {
     var mode;
     if(err)
@@ -17,6 +17,7 @@ var displayMessage = function(message, err) {
 var fileUpload = function() {
     function uploadFile(filename, data) {
         $('#waiting').show();
+
         $.ajax({
             url: "/",
             type: "POST",
@@ -29,7 +30,7 @@ var fileUpload = function() {
                 $('#waiting').hide();
             },
             error: function(e) {
-                displayMessage('An error occurred: ' + e.responseText, true);
+                displayMessage('<strong>' + e.responseText + '</strong> ', true);
                 console.error(e);
                 $('#waiting').hide();
             }
@@ -37,7 +38,6 @@ var fileUpload = function() {
     }
     return {
         dbUploadHandler: function(file) {
-            // validation
             document.getElementById('uploadFilename').innerHTML = file[0].name;
             document.getElementById('messages').innerHTML = "";
 
@@ -48,7 +48,7 @@ var fileUpload = function() {
                 uploadFile(file[0].name, data);
             }
             else {
-                displayMessage(file[0].name + ' is not a valid (.db) file.', true);
+                displayMessage('<strong>' + file[0].name + ' is not a valid (.db) file.</strong>', true);
             }
         },
     };
@@ -56,45 +56,52 @@ var fileUpload = function() {
 
 // Queries the database
 var dbQuery = function() {
-    // displays query results
     function displayQuery(data) {
-        var queryContent = '<h4>Query Result</h4><table class="dbQuery"><tr>';
+        var queryContent = `<h4>Query Result</h4><div class="table-responsive">
+            <table class="table table-bordered"><thead class="thead-dark"><tr>`;
         
         if(data !== null) {
             var keys = Object.keys(data[0]);
             for(var i=0; i < keys.length; i++) {
-                queryContent += '<th class="dbQuery-header">' + keys[i] + '</th>';
+                queryContent += '<th>' + keys[i] + '</th>';
             }
-            queryContent += '</tr>';
+            queryContent += '</tr></thead>';
             for(var i=0; i < data.length; i++) {
-                queryContent += '<tr>';
+                queryContent += '<tbody><tr>';
                 for(var j=0; j < keys.length; j++) {
-                    queryContent += '<td class="dbQuery-data">' + data[i][keys[j]] + '</td>';
+                    queryContent += '<td>' + data[i][keys[j]] + '</td>';
                 } 
-                queryContent += '</tr>';
+                queryContent += '</tr></tbody>';
             }
-            queryContent += '</table>';
+            queryContent += '</table></div>';
         }
         document.getElementById('dbContentPane').innerHTML = queryContent;
     }
     function queryDatabase(data) {
         var query = {query: data};
+        $('#waiting').show();
+
         $.ajax({
             url: "/queries",
             type: "POST",
             data: JSON.stringify(query),
             contentType: 'application/json',
             success: function(data) {
+                $('#waiting').hide();
                 displayQuery(data);
             },
             error: function(e) {
-                displayMessage('An error occurred: ' + e.responseText, true);
+                $('#waiting').hide();
+                displayMessage('<strong>' + e.responseText + '</strong> ', true);
                 console.error(e);
             }
         });
     }
     return {
         submitQuery: function(data) {
+            document.getElementById('messages').innerHTML = "";
+            document.getElementById('dbContentPane').innerHTML = "";
+
             var query;
             if(data == 'sqlQuery') {
                 query = document.getElementById('sqlQuery').value;
